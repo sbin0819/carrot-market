@@ -2,7 +2,7 @@
 
 import Button from '@/components/button';
 import Input from '@/components/input';
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { smsLogin } from './actions';
 
 const initialState = {
@@ -11,7 +11,7 @@ const initialState = {
 };
 
 export default function SMSLogin() {
-  const [state, dispatch] = useFormState(smsLogin, initialState);
+  const [state, dispatch] = useActionState(smsLogin, initialState);
 
   return (
     <div className="flex flex-col gap-10 px-6 py-8">
