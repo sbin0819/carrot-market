@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  a {
+    @apply text-orange-500;
+  }
+}
+
+@layer components {
+  .primary-btn {
+    @apply w-full rounded-md bg-orange-500 text-center font-medium text-white transition-colors hover:bg-orange-400;
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
