@@ -5,11 +5,14 @@ import { notFound, redirect } from 'next/navigation';
 async function getUser() {
   const session = await getSession();
   if (session.id) {
-    return await db.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         id: session.id,
       },
     });
+    if (user) {
+      return user;
+    }
   }
   notFound();
 }
