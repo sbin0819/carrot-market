@@ -49,10 +49,10 @@ export default async function ProductDetail({
     <div>
       <div className="relative aspect-square">
         <Image
+          className="object-cover"
           fill
           src={product.photo}
           alt={product.title}
-          className="object-cover"
         />
       </div>
       <div className="flex items-center gap-3 border-b border-neutral-700 p-5">
