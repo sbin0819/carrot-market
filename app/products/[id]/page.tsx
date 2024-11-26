@@ -1,20 +1,22 @@
 import db from '@/lib/db';
-import getSession from '@/lib/session';
 import { formatToWon } from '@/lib/utils';
 import { UserIcon } from '@heroicons/react/24/solid';
+import { unstable_cache as nextCache, revalidateTag } from 'next/cache';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 async function getIsOwner(userId: number) {
-  const session = await getSession();
-  if (session.id) {
-    return session.id === userId;
-  }
+  // const session = await getSession();
+  // if (session.id) {
+  //   return session.id === userId;
+  // }
+  console.log(userId);
   return false;
 }
 
 async function getProduct(id: number) {
+  console.log('product');
   const product = await db.product.findUnique({
     where: {
       id,
@@ -31,27 +33,69 @@ async function getProduct(id: number) {
   return product;
 }
 
+const getCachedProduct = nextCache(getProduct, ['product-detail'], {
+  tags: ['product-detail', 'xxxx'],
+});
+
+async function getProductTitle(id: number) {
+  console.log('title');
+  const product = await db.product.findUnique({
+    where: {
+      id,
+    },
+    select: {
+      title: true,
+    },
+  });
+  return product;
+}
+
+const getCachedProductTitle = nextCache(getProductTitle, ['product-title'], {
+  tags: ['product-title', 'xxxx'],
+});
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const product = await getCachedProductTitle(Number((await params).id));
+  return {
+    title: product?.title,
+  };
+}
+
 export default async function ProductDetail({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const id = Number(params.id);
+  const id = Number((await params).id);
+
   if (isNaN(id)) {
     return notFound();
   }
-  const product = await getProduct(id);
+
+  const product = await getCachedProduct(id);
+
   if (!product) {
     return notFound();
   }
+
   const isOwner = await getIsOwner(product.userId);
+
+  const revalidate = async () => {
+    'use server';
+    revalidateTag('xxxx');
+  };
+
   return (
-    <div>
+    <div className="pb-40">
       <div className="relative aspect-square">
         <Image
           className="object-cover"
           fill
-          src={product.photo}
+          src={`${product.photo}`}
           alt={product.title}
         />
       </div>
@@ -76,14 +120,16 @@ export default async function ProductDetail({
         <h1 className="text-2xl font-semibold">{product.title}</h1>
         <p>{product.description}</p>
       </div>
-      <div className="fixed bottom-0 left-0 flex w-full items-center justify-between bg-neutral-800 p-5 pb-10">
+      <div className="fixed bottom-0 flex w-full max-w-screen-sm items-center justify-between bg-neutral-800 p-5 pb-10">
         <span className="text-xl font-semibold">
           {formatToWon(product.price)}원
         </span>
         {isOwner ? (
-          <button className="rounded-md bg-red-500 px-5 py-2.5 font-semibold text-white">
-            Delete product
-          </button>
+          <form action={revalidate}>
+            <button className="rounded-md bg-red-500 px-5 py-2.5 font-semibold text-white">
+              Revalidate title cache
+            </button>
+          </form>
         ) : null}
         <Link
           className="rounded-md bg-orange-500 px-5 py-2.5 font-semibold text-white"
@@ -94,4 +140,16 @@ export default async function ProductDetail({
       </div>
     </div>
   );
+}
+
+export async function generateStaticParams() {
+  const products = await db.product.findMany({
+    select: {
+      id: true,
+    },
+  });
+
+  return products.map((product) => ({
+    id: String(product.id),
+  }));
 }

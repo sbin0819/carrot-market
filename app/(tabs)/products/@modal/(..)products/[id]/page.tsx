@@ -11,7 +11,7 @@ import { UserIcon } from '@heroicons/react/24/solid';
 const getProduct = async (id: number) => {
   return await db.product.findUnique({
     where: {
-      id: id,
+      id,
     },
     select: {
       photo: true,
@@ -28,8 +28,12 @@ const getProduct = async (id: number) => {
   });
 };
 
-export default async function Modal({ params }: { params: { id: string } }) {
-  const id = Number(params.id);
+export default async function Modal({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const id = Number((await params).id);
   if (isNaN(id)) {
     return notFound();
   }

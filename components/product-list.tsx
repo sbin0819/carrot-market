@@ -11,7 +11,7 @@ interface ProductListProps {
 
 export default function ProductList({ initialProducts }: ProductListProps) {
   const [products, setProducts] = useState(initialProducts);
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
 
@@ -23,7 +23,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
         const element = entries[0];
         if (element.isIntersecting && trigger.current && !isLastPage) {
           observer.unobserve(trigger.current);
-          setIsLoading(true);
+          // setIsLoading(true);
           const newProducts = await getMoreProducts(page + 1);
 
           if (newProducts.length !== 0) {
@@ -32,7 +32,7 @@ export default function ProductList({ initialProducts }: ProductListProps) {
           } else {
             setIsLastPage(true);
           }
-          setIsLoading(false);
+          // setIsLoading(false);
         }
       },
       {
@@ -56,14 +56,14 @@ export default function ProductList({ initialProducts }: ProductListProps) {
         <ListProduct key={product.id} {...product} />
       ))}
 
-      {!isLastPage && (
+      {/* {!isLastPage && (
         <span
           ref={trigger}
           className="mx-auto w-fit rounded-md bg-orange-500 px-3 py-2 text-sm font-semibold hover:opacity-90 active:scale-95"
         >
           {isLoading ? '로딩 중' : 'Load more'}
         </span>
-      )}
+      )} */}
     </div>
   );
 }
